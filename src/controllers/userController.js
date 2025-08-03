@@ -1,4 +1,4 @@
-const express = require('express')
+const bcrypt = require('bcrypt')
 const { User } = require('../database/models')
 
 const register = async (req, res) => {
@@ -11,7 +11,8 @@ const register = async (req, res) => {
             return res.status(400).json({error: 'That user is already registered'})
         }
 
-        const newUser = await User.create({ name, email, password })
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newUser = await User.create({ name, email, password: hashedPassword })
         res.status(201).json({message: 'User registered', userId: newUser.id})
 
     } catch(err) {
@@ -26,8 +27,9 @@ const login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ where: {email: email}})
+        const isPasswordValid = await bcrypt.compare(password, user.password)
 
-        if(!user || password != user.password) {
+        if(!user || !isPasswordValid) {
             return res.status(400).json({error: 'Invalid credentials'})
         }
 
