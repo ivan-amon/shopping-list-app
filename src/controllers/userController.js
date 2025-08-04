@@ -1,10 +1,19 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { User } = require('../database/models')
+const { registerUserSchema, loginUserSchema } = require('../validations/userValidation')
 
 const register = async (req, res) => {
     
     try {
+
+        //Validation
+        const { error, value } = registerUserSchema.validate(req.body, { abortEarly: false })
+        if(error) {
+            return res.status(400).json({ "Invalid fields": error.details.map(e => e.message)})
+        }
+
+        //Register
         const { name, email, password} = req.body
 
         const existingUser = await User.findOne({where: {email: email}})
@@ -25,6 +34,14 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     
     try {
+
+        //Validation
+        const { error, value } = loginUserSchema.validate(req.body, { abortEarly: false })
+        if(error) {
+            return res.status(400).json({ "Invalid fields": error.details.map(e => e.message)})
+        }
+
+        //Login
         const { email, password } = req.body;
 
         const user = await User.findOne({ where: {email: email}})
