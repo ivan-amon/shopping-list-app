@@ -11,6 +11,9 @@ router.get('/:id', authenticateToken, listController.getUserListById)
 router.post('', authenticateToken, listController.createList)
 
 // PATCH
-// router.patch('/:id', authenticateToken, listController.updateList)
+router.patch('/:id', authenticateToken, listController.updateList)
+
+// DELETE
+router.delete('/:id', authenticateToken, listController.deleteListById)
 
 module.exports = router
