@@ -22,10 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    description: {
-      type: DataTypes.STRING(512),
-      allowNull: true
-    }
   }, {
     sequelize,
     modelName: 'Item',
