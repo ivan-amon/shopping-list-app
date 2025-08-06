@@ -2,18 +2,19 @@ const express = require('express')
 const router = express.Router()
 const listController = require('../../controllers/listController')
 const authenticateToken = require('../../middleware/authenticateToken')
+const itemRoutes = require('./items')
 
-// GET
+// List routes
 router.get('', authenticateToken, listController.getUserLists)
 router.get('/:id', authenticateToken, listController.getUserListById)
 
-// POST
 router.post('', authenticateToken, listController.createList)
 
-// PATCH
 router.patch('/:id', authenticateToken, listController.updateList)
 
-// DELETE
 router.delete('/:id', authenticateToken, listController.deleteListById)
+
+// Nested routes (items)
+router.use('/:listId/items', itemRoutes)
 
 module.exports = router
