@@ -1,4 +1,4 @@
-const { User, List } = require('../database/models')
+const { User, List, Item } = require('../database/models')
 const { createListSchema, updateListSchema} = require('../validations/listValidation')
 
 const createList = async (req, res) => {
@@ -58,14 +58,19 @@ const getUserLists = async (req, res) => {
 
     try {
 
-        const user = await User.findByPk(req.user.userId)
-        const userLists = await List.findAll({where: {userId: user.id}})
+        // todo: number of items per list
+        const lists = await List.findAll()
+        const formattedLists = lists.map(list => list.toJSON())
+        formattedLists.forEach(list => {
+            list.date = list.date.toLocaleDateString('es-ES')
+        })
 
-        res.status(200).json(userLists)
+        res.render('home', {
+            lists: formattedLists
+        })
 
     } catch(err) {
-
-        res.status(500).json({error: 'Error fetching lists'})
+        next(err);
     }
 }
 

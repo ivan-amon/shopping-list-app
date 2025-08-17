@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const express = require('express')
 const path = require('path')
+const { engine } = require('express-handlebars')
 const app = express()
 const port = process.env.PORT || 3000
 
@@ -20,6 +21,18 @@ app.use('/api/lists', listRoutes)
 const webRoutes = require('./routes/web')
 
 app.use('/', webRoutes)
+
+//Handlebars
+// Handlebars
+app.engine('.hbs', engine({
+  extname: '.hbs',
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, 'views', 'layouts'),
+  partialsDir: path.join(__dirname, 'views', 'partials'),
+  defaultLayout: 'main',
+}));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Server display
 app.listen(port, () => {
