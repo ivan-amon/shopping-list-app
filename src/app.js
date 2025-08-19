@@ -8,6 +8,7 @@ const port = process.env.PORT || 3000
 
 // Middleware
 app.use(express.json())
+app.use(express.urlencoded())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // API endpoints
@@ -23,7 +24,6 @@ const webRoutes = require('./routes/web')
 app.use('/', webRoutes)
 
 //Handlebars
-// Handlebars
 app.engine('.hbs', engine({
   extname: '.hbs',
   defaultLayout: 'main',

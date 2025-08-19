@@ -5,22 +5,23 @@ const createList = async (req, res) => {
 
     const { error, value } = createListSchema.validate(req.body, { abortEarly: false })
     if(error) {
-        return res.status(400).json({ 
-            'Invalid fields': error.details.map(e => e.message)
+        return res.status(400).render('addList', {
+            error: true,
+            validationError: error.details.map(e => e.message)
         })
     }
 
     try {
 
-        const userId = req.user.userId
+        const userId = 1; //todo: change the userId to the client id
         const { name, notes, date, isCompleted } = req.body
         const createdList = await List.create({ userId, name, notes, date, isCompleted })
 
-        res.status(201).json({message: 'List created successfully', list: createdList})
+        res.redirect('/home')
 
     } catch(err) {
         console.log(err)
-        res.status(500).json({error: 'Error creating list'})
+        res.status(500).json({error: 'Internal server error'})
     }
 }
 
@@ -59,7 +60,6 @@ const getUserLists = async (req, res) => {
     try {
 
         const lists = await List.findAll()
-
 
         const formattedLists = lists.map(list => list.toJSON())
         formattedLists.forEach(async (list) => {

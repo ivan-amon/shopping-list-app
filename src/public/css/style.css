@@ -22,3 +22,19 @@
 .card-body .bottom-section {
   margin-top: auto;  
 }
+
+.add-list-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-body:hover {
+  background-color: #dde2e3;
+}
+
+
+.bi-plus-lg {
+  font-size: 4em;
+  color: #7F8C8D;
+}

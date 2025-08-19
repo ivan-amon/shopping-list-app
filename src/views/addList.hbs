@@ -1,0 +1,44 @@
+<div class="container pt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card bg-light">
+
+        <div class="card-header card-title">List</div>
+        
+        <div class="card-body">
+
+          {{#if error}}
+          <p class="text-danger">{{ validationError }}</p>
+          {{/if}}
+
+          <form method="POST" action="#">
+            <div class="mb-3 row">
+              <label for="name" class="col-md-4 col-form-label text-md-end">Name</label>
+              <div class="col-md-6">
+                <input id="name" type="text" class="form-control" name="name" autocomplete="name" autofocus>
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <label for="date" class="col-md-4 col-form-label text-md-end">Date</label>
+              <div class="col-md-6">
+                <input id="date" type="date" class="form-control" name="date" autocomplete="date">
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <label for="notes" class="col-md-4 col-form-label text-md-end">Notes</label>
+              <div class="col-md-6">
+                <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Optional"></textarea>
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <div class="col-md-6 offset-md-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
