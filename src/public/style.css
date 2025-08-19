@@ -1,0 +1,24 @@
+.navbar-brand:hover,
+.navbar-brand:visited {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;   
+}
+
+.card-body .card-title {
+  flex-shrink: 0;       
+}
+
+.card-body .mb-1,
+.card-body .mb-3,
+.card-body .d-flex {
+  flex-shrink: 0; 
+}
+
+.card-body .bottom-section {
+  margin-top: auto;  
+}

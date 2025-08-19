@@ -1,4 +1,4 @@
-const { User, List, Item } = require('../database/models')
+const { User, List, Item, sequelize } = require('../database/models')
 const { createListSchema, updateListSchema} = require('../validations/listValidation')
 
 const createList = async (req, res) => {
@@ -58,11 +58,13 @@ const getUserLists = async (req, res) => {
 
     try {
 
-        // todo: number of items per list
         const lists = await List.findAll()
+
+
         const formattedLists = lists.map(list => list.toJSON())
-        formattedLists.forEach(list => {
+        formattedLists.forEach(async (list) => {
             list.date = list.date.toLocaleDateString('es-ES')
+            list.numItems = await getListNumItems(list.id)
         })
 
         res.render('home', {
@@ -70,7 +72,7 @@ const getUserLists = async (req, res) => {
         })
 
     } catch(err) {
-        next(err);
+        console.log(err)
     }
 }
 
@@ -117,6 +119,17 @@ const deleteListById = async (req, res) => {
         console.log(err)
         res.status(500).json({error: 'Error deleting list'})
     }
+}
+
+const getListNumItems = async (listId) => {
+
+    const [result, metadata] = await sequelize.query(`
+        SELECT COUNT(items.id) AS numItems 
+        FROM items JOIN lists ON items.listId = lists.id 
+        WHERE lists.id = ${listId}
+        GROUP BY items.listId
+    `)
+    return result[0]?.numItems ?? 0
 }
 
 module.exports = { 
