@@ -29,12 +29,14 @@
   align-items: center;
 }
 
-.card-body:hover {
+.add-list-card:hover,
+.list-card:hover {
   background-color: #dde2e3;
+  border-radius: 0.3rem;
 }
 
 
-.bi-plus-lg {
+.add-list-icon {
   font-size: 4em;
   color: #7F8C8D;
 }

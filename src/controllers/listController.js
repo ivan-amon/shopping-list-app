@@ -1,3 +1,4 @@
+const { where } = require('sequelize')
 const { User, List, Item, sequelize } = require('../database/models')
 const { createListSchema, updateListSchema} = require('../validations/listValidation')
 
@@ -25,30 +26,30 @@ const createList = async (req, res) => {
     }
 }
 
-const updateList = async (req, res) => {
-
-    const { error, value } = updateListSchema.validate(req.body, { abortEarly: false })
-    if(error) {
-        return res.status(400).json({ 
-            'Invalid fields': error.details.map(e => e.message)
-        })
-    }
+const getUpdateListForm = async (req, res) => {
     
     try {
 
         const listId = req.params.id
-        const userId = req.user.userId
+        const userId = 1;
 
         const list = await List.findOne({where: {id: listId}})
 
         if(!list)
             return res.status(404).json({message: `List with id:${listId} not found`})
 
-        if(list.userId != userId)
-            return res.status(403).json({message: "You don't have permission to update this list"})
+        // if(list.userId != userId)
+        //     return res.status(403).json({message: "You don't have permission to update this list"})
 
-        const updatedList = await list.update(value)
-        res.status(200).json({message: 'List updated successfully', 'Updated List': updatedList})
+        const dateISO = list.date ? new Date(list.date).toISOString().slice(0, 10) : '';
+
+        res.render('editList', {
+            id: list.id,
+            name: list.name,
+            date: dateISO,
+            notes: list.notes,
+            error: false
+        })
 
     } catch(err) {
         res.status(500).json({error: 'Error updating list'})
@@ -97,23 +98,38 @@ const getUserListById = async (req, res) => {
     }
 }
 
+const updateList = async (req, res) => {
+
+    const { error, value } = createListSchema.validate(req.body, { abortEarly: false })
+    if(error) {
+        return res.status(400).render('editList', {
+            error: true,
+            validationError: error.details.map(e => e.message)
+        })
+    }
+
+    const listId = req.params.id
+    const list = await List.findOne({where: {id: listId}})
+    const updatedList = await list.update(value)
+    res.redirect('/home')
+}
+
 const deleteListById = async (req, res) => {
 
     try {
 
         const listId = req.params.id
-        const userId = req.user.userId
 
         const list = await List.findOne({where: {id: listId}})
 
         if(!list)
             return res.status(404).json({message: `List with id:${listId} not found`})
 
-        if(list.userId != userId)
-            return res.status(403).json({message: "You don't have permission to delete this list"})
+        // if(list.userId != userId)
+        //     return res.status(403).json({message: "You don't have permission to delete this list"})
 
         await List.destroy({where: { id: listId}})
-        res.status(200).json({message: `List with id:${listId} deleted successfully`})
+        res.redirect('/home')
 
     } catch(err) {
         console.log(err)
@@ -134,8 +150,10 @@ const getListNumItems = async (listId) => {
 
 module.exports = { 
     createList, 
-    updateList,
+    getUpdateListForm,
     getUserLists,
     getUserListById,
-    deleteListById
+    updateList,
+    deleteListById,
+    getListNumItems
  }

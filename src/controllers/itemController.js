@@ -1,23 +1,42 @@
 const { User, List, Item } = require('../database/models')
 const { createItemSchema, updateItemSchema } = require('../validations/itemValidation')
+const { getListNumItems } = require('./listController')
 
 const getListItems = async (req, res) => {
 
     try {
 
         const listId = req.params.listId
-        const userId = req.user.userId
 
-        const list = await List.findByPk(listId)
-
+        let list = await List.findByPk(listId)
+        
         if(!list)
             return res.status(404).json({error: `List with id:${listId} not found`})
 
-        if(list.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces this list"})
+        let hasNotes = true
+        if(!list.notes) {
+            hasNotes = false
+        }
 
-        const items = await Item.findAll({where: {listId: listId}})
-        res.status(200).json(items)
+        let numItems = await getListNumItems(listId)
+        let hasItems = true
+        if(numItems === 0) {
+            hasItems = false
+        }
+
+
+
+        // if(list.userId != userId)
+        //     return res.status(403).json({error: "You don't have permission to acces this list"})
+
+        
+        let items = await Item.findAll({where: {listId: listId}})
+        res.render('items', { 
+            list: list.toJSON(),
+            items: items.map(item => item.toJSON()),
+            hasNotes,
+            hasItems
+        })
 
 
     } catch(err) {
