@@ -24,16 +24,15 @@ const getListItems = async (req, res) => {
             hasItems = false
         }
 
-
-
         // if(list.userId != userId)
         //     return res.status(403).json({error: "You don't have permission to acces this list"})
 
         
         let items = await Item.findAll({where: {listId: listId}})
         res.render('items', { 
+            listId,
             list: list.toJSON(),
-            items: items.map(item => item.toJSON()),
+            items: items.map(item => ({...item.toJSON(), listId})),
             hasNotes,
             hasItems
         })
@@ -76,6 +75,24 @@ const getListItemById = async (req, res) => {
     }
 }
 
+const getCreateItemForm = async (req, res) => {
+
+    try {
+
+        const listId = req.params.listId
+        const list = await List.findByPk(listId)
+        
+        res.render('addItem', {
+            listId: list.id,
+            listName: list.name,
+            error: false
+        })
+
+    } catch(err) {
+        res.status(500).json({error: "Internal server error"})
+    }
+}
+
 const createListItem = async (req, res) => {    
 
     const { error, value } = createItemSchema.validate(req.body, { abortEarly: false })
@@ -86,19 +103,25 @@ const createListItem = async (req, res) => {
     }
 
     try {
+        
         const listId = req.params.listId
-        const userId = req.user.userId
+        // const userId = req.user.userId
 
         const list = await List.findByPk(listId)
 
         if(!list)
             return res.status(404).json({error: `List with id:${listId} not found`})
 
-        if(list.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces this list"})
+        let hasNotes = true
+        if(!list.notes) {
+            hasNotes = false
+        }
+
+        // if(list.userId != userId)
+        //     return res.status(403).json({error: "You don't have permission to acces this list"})
 
         const createdItem = await Item.create({listId: listId, name: req.body.name})
-        res.status(201).json({message: `Item created succesfully in the list with id:${listId}`, item: createdItem})
+        res.redirect(`/lists/${listId}/items`)
         
     } catch(err) {
         res.status(500).json({error: 'Error creating item'})
@@ -150,15 +173,15 @@ const deleteListItemById = async (req, res) => {
     try {
 
         const { id, listId } = req.params
-        const userId = req.user.userId
+        // const userId = req.user.userId
         
         const list = await List.findByPk(listId)
 
         if(!list)
             return res.status(404).json({error: `List with id:${listId} not found`})
 
-        if(list.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces this list"})
+        // if(list.userId != userId)
+        //     return res.status(403).json({error: "You don't have permission to acces this list"})
 
 
         const item = await Item.findByPk(id)
@@ -170,7 +193,7 @@ const deleteListItemById = async (req, res) => {
             return res.status(404).json({error: `Item with id:${id} not found in list with id:${listId}`})
 
         await Item.destroy({where: {id: id}})
-        res.status(200).json({message: `Item with id:${id} deleted successfully`})
+        res.redirect(`/lists/${listId}/items`)
    
     } catch(err) {
         res.status(500).json({error: 'Error deleting item'})
@@ -180,6 +203,7 @@ const deleteListItemById = async (req, res) => {
 module.exports = {
     getListItems,
     getListItemById,
+    getCreateItemForm,
     createListItem,
     updateListItemById,
     deleteListItemById
