@@ -14,13 +14,6 @@ router.get('/lists/:listId/items', itemController.getListItems)
 router.get('/lists/:listId/items/new', itemController.getCreateItemForm)
 router.get('/lists/:listId/items/delete/:id', itemController.deleteListItemById)
 
-router.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'auth', 'register.html'))
-})
-router.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'auth', 'login.html'))
-})
-
 // POST
 router.post('/lists/new', listController.createList)
 router.post('/lists/edit/:id', listController.updateList)

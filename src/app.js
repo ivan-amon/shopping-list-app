@@ -3,13 +3,19 @@ require('dotenv').config()
 const express = require('express')
 const path = require('path')
 const { engine } = require('express-handlebars')
+const { sessionMiddleware, sessionStore } = require('./config/session')
+const passport = require('./config/passport')
 const app = express()
 const port = process.env.PORT || 3000
 
 // Middleware
 app.use(express.json())
-app.use(express.urlencoded())
+app.use(express.urlencoded({ extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(sessionMiddleware)
+app.use(passport.initialize())
+app.use(passport.session())
+sessionStore.sync()
 
 // API endpoints
 const authRoutes = require('./routes/api/users')
@@ -20,8 +26,10 @@ app.use('/api/lists', listRoutes)
 
 // App endpoints
 const webRoutes = require('./routes/web')
+const usersWebRoutes = require('./routes/usersWeb')
 
 app.use('/', webRoutes)
+app.use('/', usersWebRoutes)
 
 //Handlebars
 app.engine('.hbs', engine({

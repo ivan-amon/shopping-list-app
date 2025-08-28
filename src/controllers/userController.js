@@ -1,66 +1,87 @@
+const passport = require('../config/passport')
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
 const { User } = require('../database/models')
-const { registerUserSchema, loginUserSchema } = require('../validations/userValidation')
+const { loginUserSchema, registerUserSchema } = require('../validations/userValidation')
 
 const register = async (req, res) => {
 
+  try {
+
     const { error, value } = registerUserSchema.validate(req.body, { abortEarly: false })
-    if(error) {
-        return res.status(400).json({ 
-            'Invalid fields': error.details.map(e => e.message)
+    if (error) {
+      return res.status(400).render('auth/register', {
+        error: true,
+        validationError: error.details.map(e => e.message)
+      })
+    }
+
+    const { name, email, password } = req.body
+
+    const exists = await User.findOne({ where: { email } })
+    if (exists) {
+      return res.status(409).render('auth/register', {
+        error: true,
+        validationError: 'Email alerady registered'
+      })
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = User.create({name, email, password: passwordHash})
+
+    req.login(user, (err) => {
+      if(err) {
+        return res.status(500).render('auth/register', {
+          error: true,
+          validationError: 'Internal server error'
         })
-    }
-    
-    try {
+      }
+      return res.redirect('home')
+    })
 
-        const { name, email, password} = req.body
-
-        const existingUser = await User.findOne({where: {email: email}})
-        if(existingUser) {
-            return res.status(400).json({error: 'That user is already registered'})
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const newUser = await User.create({ name, email, password: hashedPassword })
-        res.status(201).json({message: 'User registered', userId: newUser.id})
-
-    } catch(err) {
-        console.log(err)
-        res.status(500).json({error: 'Error registering user'})
-    }
+  } catch (err) {
+    res.status(500).json('Error 500: Internal server error')
+  }
 }
 
-const login = async (req, res) => {
+const login = (req, res, next) => {
+  
+  const { error } = loginUserSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).render('auth/login', {
+      error: true,
+      validationError: error.details.map(e => e.message),
+    });
+  }
 
-    const { error, value } = loginUserSchema.validate(req.body, { abortEarly: false })
-    if(error) {
-        return res.status(400).json({ 
-            'Invalid fields': error.details.map(e => e.message)
+  passport.authenticate('local', (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(401).render('auth/login', {
+        error: true,
+        validationError: info?.message || 'Invalid Credentials',
+      });
+    }
+
+    req.login(user, err => {
+      if (err) return next(err);
+      req.session.regenerate(err => {
+        if (err) return next(err);
+        req.login(user, err => {
+          if (err) return next(err);
+          req.session.save(() => res.redirect('/home'));
         })
-    }
-    
-    try {
-
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ where: {email: email}})
-        const isPasswordValid = await bcrypt.compare(password, user.password)
-
-        if(!user || !isPasswordValid)
-            return res.status(400).json({error: 'Invalid credentials'})
-
-        const token = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h'}
-        )
-    
-        res.status(200).json({ token })
-
-    } catch(err) {
-        res.status(500).json({error: 'Error logging in'})
-    }
+      })
+    })
+  })(req, res, next)
 }
 
-module.exports = { register, login }
+const logout = (req, res) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid')
+      res.redirect('/login')
+    })
+  })
+}
+
+module.exports = { register, login, logout }

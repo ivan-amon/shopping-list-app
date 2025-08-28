@@ -1,0 +1,57 @@
+{{!-- <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <img src="/img/js-logo.png" alt="Logo" width="30" class="d-inline-block align-text-top">
+      shopping-list
+    </a>
+    <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse" id="navbarColor01">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/register">Register</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav> --}}
+<div class="container pt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card bg-light">
+        <div class="card-header cards-title">Sign In</div>
+        <div class="card-body">
+
+          {{#if error}}
+          <p class="text-danger">{{ validationError }}</p>
+          {{/if}}
+
+          <form method="POST" action="/login">
+            <div class="mb-3 row">
+              <label for="email" class="col-md-4 col-form-label text-md-end">Email</label>
+              <div class="col-md-6">
+                <input id="email" type="email" class="form-control" name="email" autocomplete="email">
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <label for="password" class="col-md-4 col-form-label text-md-end">Password</label>
+              <div class="col-md-6">
+                <input id="password" type="password" class="form-control" name="password" autocomplete="new-password">
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <div class="col-md-6 offset-md-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
