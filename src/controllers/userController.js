@@ -104,7 +104,7 @@ const logout = (req, res) => {
 
     req.session.destroy(() => {
       res.clearCookie('connect.sid')
-      res.redirect('/login')
+      res.redirect('/')
     })
 
   } catch(err) {
@@ -113,6 +113,14 @@ const logout = (req, res) => {
       validationError: 'Internal Server Error'
     })
   }
+}
+
+const getWelcomePage = (req, res) => {
+  if(req.session.userId) {
+    return res.redirect('/home')
+  }
+
+  res.render('index')
 }
 
 const getLoginForm = (req, res) => {
@@ -133,5 +141,6 @@ module.exports = {
   login, 
   logout, 
   getLoginForm,
-  getRegisterForm
+  getRegisterForm,
+  getWelcomePage
 }

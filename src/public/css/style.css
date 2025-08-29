@@ -1,26 +1,27 @@
+/* === TU CSS ANTIGUO === */
 .navbar-brand:hover,
 .navbar-brand:visited {
-    color: white !important;
-    text-decoration: none !important;
+  color: white !important;
+  text-decoration: none !important;
 }
 
 .card-body {
   display: flex;
-  flex-direction: column;   
+  flex-direction: column;
 }
 
 .card-body .card-title {
-  flex-shrink: 0;       
+  flex-shrink: 0;
 }
 
 .card-body .mb-1,
 .card-body .mb-3,
 .card-body .d-flex {
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .card-body .bottom-section {
-  margin-top: auto;  
+  margin-top: auto;
 }
 
 .add-list-card {
@@ -35,8 +36,65 @@
   border-radius: 0.3rem;
 }
 
-
 .add-list-icon {
   font-size: 4em;
   color: #7F8C8D;
+}
+
+/* === CSS NUEVO: Fondo premium SaaS estático (con scroll normal) === */
+:root{
+  --bg: #3a5168;
+  --blue-glow: rgba(52,152,219,0.20);  /* Flatly azul */
+  --green-glow: rgba(24,188,156,0.18); /* Flatly verde */
+  --deep-glow: rgba(41,128,185,0.15);  /* Azul profundo */
+}
+
+/* Márgenes base sin bloquear el scroll */
+html, body { margin: 0; }
+
+/* Fondo global fijo detrás del contenido */
+body {
+  position: relative;
+  /* IMPORTANTE: permitir scroll del documento */
+  overflow: auto;              /* <- antes estaba hidden, ahora dejamos scroll */
+  background: var(--bg);
+}
+
+body::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;                  /* por detrás del contenido */
+  pointer-events: none;
+  background:
+    radial-gradient(40vmax 40vmax at 20% 30%, var(--blue-glow), transparent 70%),
+    radial-gradient(35vmax 35vmax at 80% 70%, var(--green-glow), transparent 70%),
+    radial-gradient(50vmax 50vmax at 60% -20%, var(--deep-glow), transparent 70%),
+    var(--bg);
+  background-blend-mode: screen, screen, screen, normal;
+}
+
+/* Asegura que navbar y main estén por delante del fondo */
+.navbar,
+.wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* El main puede ocupar alto de pantalla, pero NO bloquea scroll */
+.wrapper{
+  min-height: 100svh;   /* alto mínimo agradable en pantallas pequeñas */
+  overflow: visible;    /* <- antes auto; dejamos que el scroll lo lleve body */
+}
+
+.wrapper{
+  min-height: auto;       /* que no fuerce altura de pantalla */
+  overflow: visible;      /* scroll global lo lleva <body> */
+}
+
+/* Wrapper específico para el login: ocupa la pantalla y no genera scroll extra */
+.wrapper--auth{
+  min-height: 100svh;     /* alto exacto de la ventana en móvil/desktop */
+  overflow: hidden;       /* no “pide” scroll para ver el fondo */
+  position: relative;     /* por si acaso en el futuro posicionas algo */
 }

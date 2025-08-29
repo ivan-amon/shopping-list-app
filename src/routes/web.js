@@ -1,5 +1,6 @@
 const express = require('express')
 const path = require('path')
+const userController = require('../controllers/userController')
 const listController = require('../controllers/listController')
 const itemController = require('../controllers/itemController')
 const { auth } = require('../middleware/webAuth')
@@ -7,6 +8,7 @@ const { auth } = require('../middleware/webAuth')
 const router = express.Router()
 
 // GET
+router.get('/', userController.getWelcomePage)
 router.get('/home', auth, listController.getUserLists)
 router.get('/lists/new', auth, listController.getCreateListForm)
 router.get('/lists/delete/:id', auth, listController.deleteListById)
