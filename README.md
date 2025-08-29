@@ -20,7 +20,7 @@ This project was developed to solidify backend development skills, covering:
 - **Database & ORM:** MySQL with Sequelize  
 - **View Engine:** Handlebars (for SSR)  
 - **Security:** bcrypt  
-- **User Managemen:**
+- **User Management:**
   - `express-session` for SSR version
   - `jsonwebtoken` (JWT) for REST API version
 
