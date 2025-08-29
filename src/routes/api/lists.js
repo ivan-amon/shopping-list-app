@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const listController = require('../../controllers/listController')
+const listController = require('../../controllers/api/listController')
 const authenticateToken = require('../../middleware/authenticateToken')
 const itemRoutes = require('./items')
 

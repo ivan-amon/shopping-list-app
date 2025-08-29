@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 
 // API endpoints
-const authRoutes = require('./routes/api/users')
+const authRoutes = require('./routes/api/auth')
 const listRoutes = require('./routes/api/lists')
 
 app.use('/api/auth', authRoutes)
@@ -31,7 +31,7 @@ app.use('/api/lists', listRoutes)
 
 // SSR App endpoints
 const webRoutes = require('./routes/web')
-const usersWebRoutes = require('./routes/usersWeb')
+const usersWebRoutes = require('./routes/auth')
 
 app.use('/', webRoutes)
 app.use('/', usersWebRoutes)
