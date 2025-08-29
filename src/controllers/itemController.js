@@ -45,37 +45,6 @@ const getListItems = async (req, res) => {
     }
 }
 
-const getListItemById = async (req, res) => {
-
-    try {
-
-        const { id, listId }  = req.params
-        const userId = req.session.userId
-
-        const list = await List.findByPk(listId)
-
-        if(!list)
-            return res.status(404).json({error: `List with id:${listId} not found`})
-
-        if(list.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces this list"})
-
-
-        const foundItem = await Item.findByPk(id)
-
-        if(!foundItem)
-            return res.status(404).json({error: `Item with id:${id} not found`})
-
-        if(foundItem.listId != listId)
-            return res.status(404).json({error: `Item with id:${id} not found in list with id:${listId}`})
-
-        res.status(200).json(foundItem)
-
-    } catch(err) {
-        res.status(500).json({error: 'Error getting list item'})
-    }
-}
-
 const getCreateItemForm = async (req, res) => {
 
     try {
@@ -216,7 +185,6 @@ const deleteListItemById = async (req, res) => {
 
 module.exports = {
     getListItems,
-    getListItemById,
     getCreateItemForm,
     createListItem,
     updateListItemById,

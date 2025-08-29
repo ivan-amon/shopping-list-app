@@ -73,36 +73,20 @@ const getUserLists = async (req, res) => {
             type: QueryTypes.SELECT
         })
 
+        let hasLists = lists.length > 0
+        if(!lists) {
+            hasLists = false
+        }
+
         lists.forEach(async (list) => {
             list.date = list.date.toLocaleDateString('es-ES')
             list.numItems = await getListNumItems(list.id)
         })
 
-        res.render('home', { lists })
+        res.render('home', { lists, hasLists })
 
     } catch(err) {
         console.log(err)
-    }
-}
-
-const getUserListById = async (req, res) => {
-
-    try {
-
-        const listId = req.params.id
-        const userId = req.session.userId
-        const foundList = await List.findByPk(listId)
-
-        if(!foundList)
-            return res.status(404).json({error: `List with id:${listId} not found`})
-
-        if(foundList.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces on this list"})
-
-        res.status(200).json(foundList)
-
-    } catch(err) {
-        res.status(500).json({error: 'Error fetching list'})
     }
 }
 
@@ -168,7 +152,6 @@ module.exports = {
     createList, 
     getUpdateListForm,
     getUserLists,
-    getUserListById,
     updateList,
     deleteListById,
     getCreateListForm,
