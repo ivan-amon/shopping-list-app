@@ -25,7 +25,11 @@
 
 </head>
 <body>
-    {{> navbar }}
+    {{#if isAuth}}
+      {{> navbar }}
+    {{else}}
+      {{> loginNavbar}}
+    {{/if}}
     <main class="wrapper">
       {{{ body }}}
     </main>

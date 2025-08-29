@@ -14,6 +14,11 @@ app.use(express.urlencoded({ extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(sessionMiddleware)
 sessionStore.sync()
+app.use((req, res, next) => {
+  res.locals.isAuth = Boolean(req.session.userId);
+  res.locals.currentUser = req.session.user || null;
+  next();
+});
 
 
 // API endpoints
