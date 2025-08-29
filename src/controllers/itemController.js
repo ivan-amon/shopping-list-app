@@ -7,11 +7,12 @@ const getListItems = async (req, res) => {
     try {
 
         const listId = req.params.listId
+        const userId = req.session.userId
 
         let list = await List.findByPk(listId)
         
         if(!list)
-            return res.status(404).json({error: `List with id:${listId} not found`})
+            return res.status(404).redirect('/home')
 
         let hasNotes = true
         if(!list.notes) {
@@ -24,8 +25,8 @@ const getListItems = async (req, res) => {
             hasItems = false
         }
 
-        // if(list.userId != userId)
-        //     return res.status(403).json({error: "You don't have permission to acces this list"})
+        if(list.userId != userId)
+            return res.status(404).redirect('/home')
 
         
         let items = await Item.findAll({where: {listId: listId}})
@@ -49,7 +50,7 @@ const getListItemById = async (req, res) => {
     try {
 
         const { id, listId }  = req.params
-        const userId = req.user.userId
+        const userId = req.session.userId
 
         const list = await List.findByPk(listId)
 
@@ -80,7 +81,17 @@ const getCreateItemForm = async (req, res) => {
     try {
 
         const listId = req.params.listId
+        const userId = req.session.userId
+
         const list = await List.findByPk(listId)
+
+        if(!list) {
+            res.status(404).redirect('/home')
+        }
+
+        if(list.userId !== userId) {
+            res.status(403).redirect('/home')
+        }
         
         res.render('addItem', {
             listId: list.id,
@@ -105,20 +116,23 @@ const createListItem = async (req, res) => {
     try {
         
         const listId = req.params.listId
-        // const userId = req.user.userId
+        const userId = req.session.userId
 
         const list = await List.findByPk(listId)
 
-        if(!list)
-            return res.status(404).json({error: `List with id:${listId} not found`})
+        if(!list) {
+            res.status(404).redirect('/home')
+        }
+
+        if(list.userId !== userId) {
+            res.status(403).redirect('/home')
+        }
 
         let hasNotes = true
         if(!list.notes) {
             hasNotes = false
         }
 
-        // if(list.userId != userId)
-        //     return res.status(403).json({error: "You don't have permission to acces this list"})
 
         const createdItem = await Item.create({listId: listId, name: req.body.name})
         res.redirect(`/lists/${listId}/items`)
@@ -140,15 +154,15 @@ const updateListItemById = async (req, res) => {
     try {
 
         const { id, listId } = req.params
-        const userId = req.user.userId
+        const userId = req.session.userId
 
         const list = await List.findByPk(listId)
 
         if(!list)
-            return res.status(404).json({error: `List with id:${listId} not found`})
+            return res.status(404).redirect('/home')
 
         if(list.userId != userId)
-            return res.status(403).json({error: "You don't have permission to acces this list"})
+            return res.status(403).redirect('/home')
 
 
         const item = await Item.findByPk(id)
@@ -173,15 +187,15 @@ const deleteListItemById = async (req, res) => {
     try {
 
         const { id, listId } = req.params
-        // const userId = req.user.userId
+        const userId = req.session.userId
         
         const list = await List.findByPk(listId)
 
         if(!list)
-            return res.status(404).json({error: `List with id:${listId} not found`})
+            return res.status(404).redirect('/home')
 
-        // if(list.userId != userId)
-        //     return res.status(403).json({error: "You don't have permission to acces this list"})
+        if(list.userId != userId)
+            return res.status(403).redirect('/home')
 
 
         const item = await Item.findByPk(id)

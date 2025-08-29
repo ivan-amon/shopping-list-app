@@ -19,8 +19,6 @@
     "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.3",
-    "passport": "^0.7.0",
-    "passport-local": "^1.0.0",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {

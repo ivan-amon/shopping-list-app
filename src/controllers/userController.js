@@ -1,9 +1,8 @@
-const passport = require('../config/passport')
 const bcrypt = require('bcrypt')
 const { User } = require('../database/models')
 const { loginUserSchema, registerUserSchema } = require('../validations/userValidation')
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
 
   try {
 
@@ -21,29 +20,34 @@ const register = async (req, res) => {
     if (exists) {
       return res.status(409).render('auth/register', {
         error: true,
-        validationError: 'Email alerady registered'
+        validationError: 'Email already registered'
       })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const user = User.create({name, email, password: passwordHash})
+    const user = await User.create({name, email, password: passwordHash})
 
-    req.login(user, (err) => {
+    //log user
+    req.session.regenerate(err => {
       if(err) {
         return res.status(500).render('auth/register', {
           error: true,
-          validationError: 'Internal server error'
+          validationError: 'Internal Server Error'
         })
       }
-      return res.redirect('home')
+      req.session.userId = user.id
+      req.session.save(() => res.redirect('/home'))
     })
 
   } catch (err) {
-    res.status(500).json('Error 500: Internal server error')
+      return res.status(500).render('auth/register', {
+        error: true,
+        validationError: 'Internal Server Error'
+      })
   }
 }
 
-const login = (req, res, next) => {
+const login = async (req, res) => {
   
   const { error } = loginUserSchema.validate(req.body, { abortEarly: false });
   if (error) {
@@ -53,35 +57,81 @@ const login = (req, res, next) => {
     });
   }
 
-  passport.authenticate('local', (err, user, info) => {
-    if (err) return next(err);
-    if (!user) {
+  try {
+
+    const { email, password } = req.body
+
+    const user = await User.findOne({ where: { email }})
+
+
+    if(!user) {
       return res.status(401).render('auth/login', {
         error: true,
-        validationError: info?.message || 'Invalid Credentials',
-      });
+        validationError: 'Invalid credentials'
+      })
     }
 
-    req.login(user, err => {
-      if (err) return next(err);
-      req.session.regenerate(err => {
-        if (err) return next(err);
-        req.login(user, err => {
-          if (err) return next(err);
-          req.session.save(() => res.redirect('/home'));
-        })
+    const validPassword = await bcrypt.compare(password, user.password)
+    if(!validPassword) {
+      return res.status(401).render('auth/login', {
+        error:true,
+        validationError: 'Invalid credentials'
       })
+    }
+
+    req.session.regenerate(err => {
+      if(err) {
+        return res.status(500).render('auth/register', {
+          error: true,
+          validationError: 'Internal Server Error'
+        })
+      }
+      req.session.userId = user.id
+      req.session.save(() => res.redirect('/home'))
     })
-  })(req, res, next)
+
+  } catch(err) {
+    return res.status(500).render('auth/login', {
+      error: true,
+      validationError: 'Internal Server Error'
+    })
+  }
 }
 
 const logout = (req, res) => {
-  req.logout(() => {
+
+  try {
+
     req.session.destroy(() => {
       res.clearCookie('connect.sid')
       res.redirect('/login')
     })
-  })
+
+  } catch(err) {
+    return res.status(500).render('auth/register', {
+      error: true,
+      validationError: 'Internal Server Error'
+    })
+  }
 }
 
-module.exports = { register, login, logout }
+const getLoginForm = (req, res) => {
+
+  if(req.session.userId) {
+    return res.redirect('/home')
+  }
+
+  res.render('auth/login')
+}
+
+const getRegisterForm = (req, res) => {
+  res.render('auth/register')
+}
+
+module.exports = { 
+  register, 
+  login, 
+  logout, 
+  getLoginForm,
+  getRegisterForm
+}

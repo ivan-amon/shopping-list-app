@@ -5,8 +5,8 @@ const userController = require('../controllers/userController')
 const router = express.Router()
 
 // GET
-router.get('/register', (req, res) => { res.render('auth/register')})
-router.get('/login', (req, res) => { res.render('auth/login')})
+router.get('/register', userController.getRegisterForm)
+router.get('/login', userController.getLoginForm)
 
 // POST
 router.post('/register', userController.register)

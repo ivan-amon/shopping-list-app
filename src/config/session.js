@@ -16,7 +16,7 @@ const sessionMiddleware = session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 30 * 24 * 3600 * 1000,
+    maxAge: 30 * 24 * 3600 * 1000, // 30 days
     httpOnly: true,
     sameSite: 'lax'
   }

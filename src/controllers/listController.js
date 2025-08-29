@@ -1,6 +1,8 @@
-const { where } = require('sequelize')
+const { where, QueryTypes } = require('sequelize')
 const { User, List, Item, sequelize } = require('../database/models')
 const { createListSchema, updateListSchema} = require('../validations/listValidation')
+const { injectReplacements } = require('sequelize/lib/utils/sql')
+
 
 const createList = async (req, res) => {
 
@@ -14,7 +16,7 @@ const createList = async (req, res) => {
 
     try {
 
-        const userId = 1; //todo: change the userId to the client id
+        const userId = req.session.userId;
         const { name, notes, date, isCompleted } = req.body
         const createdList = await List.create({ userId, name, notes, date, isCompleted })
 
@@ -31,15 +33,15 @@ const getUpdateListForm = async (req, res) => {
     try {
 
         const listId = req.params.id
-        const userId = 1;
+        const userId = req.session.userId;
 
         const list = await List.findOne({where: {id: listId}})
 
         if(!list)
-            return res.status(404).json({message: `List with id:${listId} not found`})
+            return res.status(404).redirect('/home')
 
-        // if(list.userId != userId)
-        //     return res.status(403).json({message: "You don't have permission to update this list"})
+        if(list.userId != userId)
+            return res.status(403).redirect('/home')
 
         const dateISO = list.date ? new Date(list.date).toISOString().slice(0, 10) : '';
 
@@ -60,17 +62,23 @@ const getUserLists = async (req, res) => {
 
     try {
 
-        const lists = await List.findAll()
+        const userId = req.session.userId
 
-        const formattedLists = lists.map(list => list.toJSON())
-        formattedLists.forEach(async (list) => {
+        const lists = await sequelize.query(`
+            SELECT lists.* FROM users
+            JOIN lists ON users.id = lists.userId
+            WHERE users.id = :userId
+        `, {
+            replacements: { userId },
+            type: QueryTypes.SELECT
+        })
+
+        lists.forEach(async (list) => {
             list.date = list.date.toLocaleDateString('es-ES')
             list.numItems = await getListNumItems(list.id)
         })
 
-        res.render('home', {
-            lists: formattedLists
-        })
+        res.render('home', { lists })
 
     } catch(err) {
         console.log(err)
@@ -82,7 +90,7 @@ const getUserListById = async (req, res) => {
     try {
 
         const listId = req.params.id
-        const userId = req.user.userId
+        const userId = req.session.userId
         const foundList = await List.findByPk(listId)
 
         if(!foundList)
@@ -119,14 +127,15 @@ const deleteListById = async (req, res) => {
     try {
 
         const listId = req.params.id
+        const userId = req.session.userId
 
         const list = await List.findOne({where: {id: listId}})
 
         if(!list)
-            return res.status(404).json({message: `List with id:${listId} not found`})
+            return res.status(404).redirect('/home')
 
-        // if(list.userId != userId)
-        //     return res.status(403).json({message: "You don't have permission to delete this list"})
+        if(list.userId != userId)
+            return res.status(403).redirect('/home')
 
         await List.destroy({where: { id: listId}})
         res.redirect('/home')
@@ -137,16 +146,23 @@ const deleteListById = async (req, res) => {
     }
 }
 
+const getCreateListForm = (req, res) => {
+    res.render('addList')
+}
+
 const getListNumItems = async (listId) => {
 
     const [result, metadata] = await sequelize.query(`
         SELECT COUNT(items.id) AS numItems 
         FROM items JOIN lists ON items.listId = lists.id 
-        WHERE lists.id = ${listId}
+        WHERE lists.id = :listId
         GROUP BY items.listId
-    `)
+    `, {
+        replacements: { listId }
+    })
     return result[0]?.numItems ?? 0
 }
+
 
 module.exports = { 
     createList, 
@@ -155,5 +171,6 @@ module.exports = {
     getUserListById,
     updateList,
     deleteListById,
+    getCreateListForm,
     getListNumItems
  }
